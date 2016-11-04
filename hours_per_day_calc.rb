@@ -12,7 +12,7 @@ class HoursPerDayCalc
   end
 
   # options
-  # 1: AM-PM                5: AM-AM (two days)           9: Open 24hrs (todo: need to add this option below)
+  # 1: AM-PM                5: AM-AM (two days)           9: Open 24hrs
   # 2: AM-AM (same day)     6: 6-9PM (assume both PM)
   # 3: PM-PM                7: 12-3PM, 4:30-9PM
   # 4: PM-AM                8: Closed
@@ -26,15 +26,21 @@ class HoursPerDayCalc
 
     if @option == 8
       @@hours_per_day = Array.new($end,0)
+    elsif @option == 9
+      @@hours_per_day = Array.new($end,1)
     else
       @@hours_per_day = []
       if @hours.include?(",")
         temp_time = @hours.split(",")
-        time1 = temp_time[0].split("-")
+        time1 = temp_time[0].split("–")
         time2 = temp_time[1].split("-")
         # time1[0],time1[1],time2[0].delete(" "),time2[1]
       else
-        time1 = @hours.split("-")
+        if @hours.include?("–")
+          time1 = @hours.split("–")
+        else @hours.include!("-")
+          time1 = @hours.split("-")
+        end
         #        puts time1[0],time1[1]                   # 4:30AM, 9PM
       end
 
@@ -196,4 +202,7 @@ class HoursPerDayCalc
 end
 
 #test = HoursPerDayCalc.new("10:30-2PM, 4:30-9:30PM",7)
-#test.convert_24hrs
+#test = HoursPerDayCalc.new("Open 24hours",9)
+#test = HoursPerDayCalc.new("4:30am-9pm",1)
+#test1 = HoursPerDayCalc.new("7AM–7:30PM",1)   # different "-" are showing in the search
+#puts test1.convert_24hrs
