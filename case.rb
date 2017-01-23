@@ -24,9 +24,9 @@ class Case
       time2 = time1[1].split('AM')[0].split(':')[0]  # end hour only read-in as "String"
       time3 = time1[0].split('AM')[0].split(':')[0]  # start hour only
       if (time2.to_i > time3.to_i) && (time2.to_i < 12)
-        option = 2
+        option = 2                                      # e.g., 8AM-11AM (morning only)
       else
-        option = 5
+        option = 5                                      # e.g., 9AM-2AM (until next morning)
       end
     elsif time1[0].include?('PM') && time1[1].include?('PM')
         option = 3

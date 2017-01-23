@@ -5,6 +5,8 @@ class HoursPerDayCalc
   attr_reader :hours
   attr_reader :option
 
+  @@hours_per_day = Hash.new
+
   def initialize(hours,option)
     @hours = hours
     @option = option
@@ -25,11 +27,16 @@ class HoursPerDayCalc
     finish_hr = 0
 
     if @option == 8
-      @@hours_per_day = Array.new($end,0)
+      ($start...$end).each do |n|
+        @@hours_per_day[n] = 0
+      end
+      return @@hours_per_day
     elsif @option == 9
-      @@hours_per_day = Array.new($end,1)
+      ($start...$end).each do |n|
+        @@hours_per_day[n] = 1
+      end
+      return @@hours_per_day
     else
-      @@hours_per_day = []
       if @hours.include?(",")
         temp_time = @hours.split(",")
         time1 = temp_time[0].split("–")
@@ -204,5 +211,6 @@ end
 #test = HoursPerDayCalc.new("10:30-2PM, 4:30-9:30PM",7)
 #test = HoursPerDayCalc.new("Open 24hours",9)
 #test = HoursPerDayCalc.new("4:30am-9pm",1)
-#test1 = HoursPerDayCalc.new("7AM–7:30PM",1)   # different "-" are showing in the search
+#test1 = HoursPerDayCalc.new("7AM–7:30PM",9)   # different "-" are showing in the search
 #puts test1.convert_24hrs
+

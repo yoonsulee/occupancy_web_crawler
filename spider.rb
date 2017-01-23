@@ -2,11 +2,12 @@ require 'mechanize'
 require './date.rb'
 require './case.rb'
 require './data_input.rb'
+require './populate_hourly.rb'
 
 class Spider
 
   @@search_array = []
-  @@options = 0
+#  $day_of_week = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday']
 
   def initialize(search_engine)
     @search_engine = search_engine
@@ -45,12 +46,8 @@ class Spider
     if @result_day
       @@hours["#{day}"] = @result_day
       hoo_hash.merge!(@@hours)
-#      @@options = Case.new("#{@result_day}").calc_option     # todo: need to add this somewhere else
-#      hoo_hash["#{@@options}"] = @@hours
-#    else
-#      puts "No hour data available"
     end
-
+#    puts hoo_hash
 
     return hoo_hash
 
@@ -60,7 +57,6 @@ class Spider
     base_hash = DataInput.new(path,1,"SamplePerType").read_data   # 1-CSV, "SamplePerType"-only for xlsx files
 #    return base_hash["50"]
     #=> {:index=>50, :address=>"251  NEW KARNERRD   ALBANY NY 12205", :name=>"HOUSE TALK", :long=>"40,000 - 99,999", :lat=>"42.722216"}
-    day_of_week = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday']
     data_matrix = Hash.new{ |v,k| v[k] = Hash.new()}
     key_word = {}
     base_hash.each do |key, value|
@@ -68,39 +64,58 @@ class Spider
       zip_key = base_hash["#{key}"][:zip]
       busi_name_key = base_hash["#{key}"][:name]
       index_key = base_hash["#{key}"][:index]
-      key_word = "#{busi_name_key} + " " + #{zip_key}"
+      key_word = "#{busi_name_key}" + " " + "#{zip_key}"
 
       # run scrape using the above key word for each day of the week
-      day_of_week.each do |days|
+      $day_of_week.each do |days|
         key_word_new = key_word + "  #{days} hours"
         daily_hoo = scrape_single(key_word_new,days)
         popular = occup_hours(@@search_result)
         data_matrix["#{index_key}"].merge!(popular)
         data_matrix["#{index_key}"].merge!(daily_hoo)
       end
-      puts index_key
+#      puts index_key                                  #todo: get rid of this when done testing
     end
 
     # check to see how many hours of operations were scraped off of the entire building stock input
     empty_count = 0
     empty_hours = 0
+    tot_count = 0
+    tot_hours = 0
     data_matrix.each do |k,v|
-      if data_matrix["#{k}"]["monday"].nil? && data_matrix["#{k}"][""].empty?
-        empty_count += 1
-      else
-        empty_count += 0
-        if data_matrix["#{k}"][""]
-          empty_hours += 1
-        end
+#      if data_matrix["#{k}"]["monday"].nil? && data_matrix["#{k}"][""].empty?     # some bldgs have popular times but no HOO, e.g., index=167
+#        empty_count += 1
+#      else
+#        empty_count += 0
+#        if data_matrix["#{k}"][""]
+#          empty_hours += 1
+#        end
+#      end
+      if data_matrix["#{k}"].include?('monday')
+        tot_count += 1
       end
+      if data_matrix["#{k}"].include?('Mondays') || data_matrix["#{k}"].include?('Tuesdays') || data_matrix["#{k}"].include?('Wednesdays') ||
+         data_matrix["#{k}"].include?('Thursdays') || data_matrix["#{k}"].include?('Fridays') || data_matrix["#{k}"].include?('Saturdays') || data_matrix["#{k}"].include?('Sundays')
+        tot_hours += 1
+      end
+      if data_matrix["#{k}"]["monday"].nil? && data_matrix["#{k}"][""]
+        empty_count += 1
+      end
+#      if data_matrix["#{k}"]["monday"].nil? || data_matrix["#{k}"][""].empty?
+#      if data_matrix["#{k}"][""]
+#        empty_count += 1
+#      end
+      # test to see which one has passes, ie., index
+  #    puts data_matrix["#{k}"]                        # actual values to all the indices
+      puts k                                           # actual indices
     end
-#    puts "Out of #{data_matrix.count()} buildings, #{empty_count} were empty and #{data_matrix.count() - empty_count} were created."
-#    puts "Total of #{data_matrix.count() - empty_count - empty_hours} daily hours accounted for."
+    puts "Out of #{data_matrix.count()} buildings, #{empty_count} were empty and #{data_matrix.count() - empty_count} were created."
+    puts "Total of #{tot_hours} daily hours accounted for."
     temp = {}
-    total_hoo = data_matrix.count() - empty_count
-    total_hours = data_matrix.count() - empty_count - empty_hours
-    temp["hoo"] = total_hoo
-    temp["hours"] = total_hours
+#    total_hoo = data_matrix.count() - empty_count
+#    total_hours = data_matrix.count() - empty_count - empty_hours
+    temp["hoo"] = tot_count
+    temp["hours"] = tot_hours
     data_matrix["stats"].merge!(temp)
 
     return data_matrix
@@ -134,11 +149,11 @@ end #end of :class Spider
 #to test in command line:
 #                        ruby -r "./spider.rb" -e "Spider.scrape_single"
 
-#key_word = 'VANDERVORT GROUP LLC 12210 monday hours'
-key_word = 'seven stars bakery monday hours'
+key_word = 'VANDERVORT GROUP LLC 12210 saturday hours'
+#key_word = 'seven stars bakery monday hours'
 #temp = Spider.new('a').scrape_single(key_word,'saturday')
 #puts temp
 path = "/Users/yoonsulee/desktop/Hours_Web/ciap1.csv"
 temp2 = Spider.new('b').scrape_multiple(path)
 puts temp2
-Spider.new('c').save_to_json(temp2)
+#Spider.new('c').save_to_json(temp2)
