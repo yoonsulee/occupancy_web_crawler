@@ -153,7 +153,7 @@ key_word = 'VANDERVORT GROUP LLC 12210 saturday hours'
 #key_word = 'seven stars bakery monday hours'
 #temp = Spider.new('a').scrape_single(key_word,'saturday')
 #puts temp
-path = "/Users/yoonsulee/desktop/Hours_Web/ciap1.csv"
+path = "/Users/yoonsulee/desktop/Hours_Web/ciap_short.csv"
 temp2 = Spider.new('b').scrape_multiple(path)
 puts temp2
 #Spider.new('c').save_to_json(temp2)
