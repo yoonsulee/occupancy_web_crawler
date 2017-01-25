@@ -55,6 +55,7 @@ class Spider
 
   def scrape_multiple(path)
     base_hash = DataInput.new(path,1,"SamplePerType").read_data   # 1-CSV, "SamplePerType"-only for xlsx files
+#    puts base_hash
 #    return base_hash["50"]
     #=> {:index=>50, :address=>"251  NEW KARNERRD   ALBANY NY 12205", :name=>"HOUSE TALK", :long=>"40,000 - 99,999", :lat=>"42.722216"}
     data_matrix = Hash.new{ |v,k| v[k] = Hash.new()}
@@ -65,6 +66,12 @@ class Spider
       busi_name_key = base_hash["#{key}"][:name]
       index_key = base_hash["#{key}"][:index]
       key_word = "#{busi_name_key}" + " " + "#{zip_key}"
+      sqft = base_hash["#{key}"][:sqft]
+      cde1 = base_hash["#{key}"][:cde1]
+      cde2 = base_hash["#{key}"][:cde2]
+      naics = base_hash["#{key}"][:naics]
+      bus_stat = base_hash["#{key}"][:bus_stat]
+      ind_firm = base_hash["#{key}"][:ind_firm]
 
       # run scrape using the above key word for each day of the week
       $day_of_week.each do |days|
@@ -74,23 +81,25 @@ class Spider
         data_matrix["#{index_key}"].merge!(popular)
         data_matrix["#{index_key}"].merge!(daily_hoo)
       end
+
+      data_matrix["#{index_key}"][:name] = busi_name_key
+      data_matrix["#{index_key}"][:sqft] = sqft
+      data_matrix["#{index_key}"][:cde1] = cde1
+      data_matrix["#{index_key}"][:cde2] = cde2
+      data_matrix["#{index_key}"][:naics] = naics
+      data_matrix["#{index_key}"][:business_stat] = bus_stat
+      data_matrix["#{index_key}"][:ind_or_firm] = ind_firm
+
 #      puts index_key                                  #todo: get rid of this when done testing
     end
 
+    data_matrix.delete("0")           # the first row consists of headers, hence need to get rid of this
+
     # check to see how many hours of operations were scraped off of the entire building stock input
     empty_count = 0
-    empty_hours = 0
     tot_count = 0
     tot_hours = 0
     data_matrix.each do |k,v|
-#      if data_matrix["#{k}"]["monday"].nil? && data_matrix["#{k}"][""].empty?     # some bldgs have popular times but no HOO, e.g., index=167
-#        empty_count += 1
-#      else
-#        empty_count += 0
-#        if data_matrix["#{k}"][""]
-#          empty_hours += 1
-#        end
-#      end
       if data_matrix["#{k}"].include?('monday')
         tot_count += 1
       end
@@ -101,10 +110,6 @@ class Spider
       if data_matrix["#{k}"]["monday"].nil? && data_matrix["#{k}"][""]
         empty_count += 1
       end
-#      if data_matrix["#{k}"]["monday"].nil? || data_matrix["#{k}"][""].empty?
-#      if data_matrix["#{k}"][""]
-#        empty_count += 1
-#      end
       # test to see which one has passes, ie., index
   #    puts data_matrix["#{k}"]                        # actual values to all the indices
       puts k                                           # actual indices
@@ -149,11 +154,11 @@ end #end of :class Spider
 #to test in command line:
 #                        ruby -r "./spider.rb" -e "Spider.scrape_single"
 
-key_word = 'VANDERVORT GROUP LLC 12210 saturday hours'
+#key_word = 'VANDERVORT GROUP LLC 12210 saturday hours'
 #key_word = 'seven stars bakery monday hours'
 #temp = Spider.new('a').scrape_single(key_word,'saturday')
 #puts temp
-path = "/Users/yoonsulee/desktop/Hours_Web/ciap_short.csv"
+path = "/Users/yoonsulee/desktop/Hours_Web/ciap_naics_20.csv"
 temp2 = Spider.new('b').scrape_multiple(path)
 puts temp2
 #Spider.new('c').save_to_json(temp2)

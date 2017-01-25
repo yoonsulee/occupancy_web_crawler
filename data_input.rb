@@ -38,8 +38,14 @@ class DataInput
       data_table[:address] = row[4]+row[5]+row[6]+row[7]+row[8]+row[9]+row[10]+" "+row[11]+" "+row[12]+" "+"#{full_zip}"
       data_table[:zip] = full_zip
       data_table[:name] = row[2]
-      data_table[:long] = row[15]
       data_table[:lat] = row[16]
+      data_table[:long] = row[17]
+      data_table[:sqft] = row[15]             # sqft of the business/property
+      data_table[:cde1] = row[19]             # primary business description
+      data_table[:cde2] = row[21]             # secondary business description
+      data_table[:naics] = row[23]            # NAICS description
+      data_table[:bus_stat] = row[24]         # single location, branch, HQ, or subsidiary
+      data_table[:ind_firm] = row[25]         # individual or firm
       data_matrix["#{i}"].merge!(data_table)
 
       i += 1
@@ -65,12 +71,13 @@ end
 
 # test
 
-#ciap_path = "/Users/yoonsulee/desktop/Hours_Web/ciap.csv"
+#ciap_path = "/Users/yoonsulee/desktop/Hours_Web/ciap_naics_20.csv"
 #base_data = DataInput.new(ciap_path,1,"SamplePerType")
 #data_hash = base_data.read_data
-#puts base_data.read_data_json(data_hash)
-#jhash = base_data.read_data_json(data_hash)
-#puts data_hash["40"][:address]                # individual values
-#puts data_hash["50"]
+##puts base_data.read_data_json(data_hash)
+##jhash = base_data.read_data_json(data_hash)
+##puts data_hash["40"][:address]                # individual values
+#puts data_hash["19"]
 #=> {:index=>50, :address=>"251  NEW KARNERRD   ALBANY NY 12205", :name=>"HOUSE TALK                    ", :long=>"40,000 - 99,999", :lat=>"42.722216"}
 #puts data_hash.keys      # all the indexes
+#data_hash.each_key{|key| puts data_hash["#{key}"][:naics]}                # all the naics descriptions
