@@ -3,6 +3,7 @@ require './date.rb'
 require './case.rb'
 require './data_input.rb'
 require './populate_hourly.rb'
+require 'parallel'
 
 class Spider
 
@@ -90,7 +91,7 @@ class Spider
       data_matrix["#{index_key}"][:business_stat] = bus_stat
       data_matrix["#{index_key}"][:ind_or_firm] = ind_firm
 
-#      puts index_key                                  #todo: get rid of this when done testing
+      puts index_key                                  #todo: get rid of this when done testing
     end
 
     data_matrix.delete("0")           # the first row consists of headers, hence need to get rid of this
@@ -119,9 +120,12 @@ class Spider
     temp = {}
 #    total_hoo = data_matrix.count() - empty_count
 #    total_hours = data_matrix.count() - empty_count - empty_hours
+    temp["total"] = data_matrix.count()
     temp["hoo"] = tot_count
     temp["hours"] = tot_hours
     data_matrix["stats"].merge!(temp)
+
+    save_to_json(data_matrix,path)
 
     return data_matrix
   end
@@ -140,11 +144,20 @@ class Spider
       end
   end
 
-  def save_to_json(data_hash)
-    json_path = "/Users/yoonsulee/desktop/Hours_Web/results.json"
+  def save_to_json(data_hash,path)
+    json_path = result_path(path)
+#    json_path = "/Users/yoonsulee/desktop/Hours_Web/results_tue_7.json"
     File.open(json_path,"w") do |f|
       f.write(data_hash.to_json)
     end
+  end
+
+  def result_path(path)
+    actual_day = Date.today.abbr_dayname.downcase
+    temp_path = path.split("Raw Data/")[1]
+    data_suffix = temp_path.split("_")[3].split(".")[0]
+    actual_path = "/Users/yoonsulee/desktop/Hours_Web/Raw Data/Results/results_#{actual_day}_#{data_suffix}.json"
+    return actual_path
   end
 
 
@@ -154,11 +167,43 @@ end #end of :class Spider
 #to test in command line:
 #                        ruby -r "./spider.rb" -e "Spider.scrape_single"
 
+#public ip address @ Roslyn: 68.199.223.68
 #key_word = 'VANDERVORT GROUP LLC 12210 saturday hours'
 #key_word = 'seven stars bakery monday hours'
 #temp = Spider.new('a').scrape_single(key_word,'saturday')
 #puts temp
-path = "/Users/yoonsulee/desktop/Hours_Web/ciap_naics_20.csv"
-temp2 = Spider.new('b').scrape_multiple(path)
-puts temp2
-#Spider.new('c').save_to_json(temp2)
+path1 = "/Users/yoonsulee/desktop/Hours_Web/Raw Data/ciap_data_naics_1.csv"
+path2 = "/Users/yoonsulee/desktop/Hours_Web/Raw Data/ciap_data_naics_2.csv"
+path3 = "/Users/yoonsulee/desktop/Hours_Web/Raw Data/ciap_data_naics_8.csv"
+path4 = "/Users/yoonsulee/desktop/Hours_Web/Raw Data/ciap_data_naics_3.csv"
+path5 = "/Users/yoonsulee/desktop/Hours_Web/Raw Data/ciap_data_naics_4.csv"
+path6 = "/Users/yoonsulee/desktop/Hours_Web/Raw Data/ciap_data_naics_5.csv"
+path7 = "/Users/yoonsulee/desktop/Hours_Web/Raw Data/ciap_data_naics_5-1.csv"
+path8 = "/Users/yoonsulee/desktop/Hours_Web/Raw Data/ciap_data_naics_6.csv"
+path9 = "/Users/yoonsulee/desktop/Hours_Web/Raw Data/ciap_data_naics_7.csv"
+path_aws = "/home/ec2-user/web_crawl/raw_data"
+temp1 = Spider.new('b').scrape_multiple(path1)
+sleep 2
+temp2 = Spider.new('b').scrape_multiple(path2)
+sleep 2
+temp3 = Spider.new('b').scrape_multiple(path3)
+sleep 2
+temp4 = Spider.new('b').scrape_multiple(path4)
+sleep 2
+temp5 = Spider.new('b').scrape_multiple(path5)
+sleep 2
+temp6 = Spider.new('b').scrape_multiple(path6)
+sleep 2
+temp7 = Spider.new('b').scrape_multiple(path7)
+sleep 2
+temp8 = Spider.new('b').scrape_multiple(path8)
+sleep 2
+temp9 = Spider.new('b').scrape_multiple(path9)
+#puts temp2
+
+#temp3 = Spider.new('b').scrape_multiple(path2)
+#puts temp3
+#temp = Spider.new('c').result_path(path2)
+#puts temp
+##data = {"1"=>{""=>[], :name=>"CHINESE SCALLION PIE          ", :sqft=>"40,000 - 99,999", :cde1=>"ABDOMINAL SUPPORTS-MANUFACTURERS             ", :cde2=>"                                             ", :naics=>"SURGICAL APPLIANCE & SUPPLIES MANUFACTURING       ", :business_stat=>"SINGLE LOC          ", :ind_or_firm=>"FIRM/BUSINESS"}}
+#Spider.new('z').save_to_json(data,path2)
